@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "CloudFormation template to create an IAM role"
 
 Resources:
-  # EC2 role
+  # EC2 role: Allow EC2 instances in an ECS cluster to access ECS
   ECSInstanceRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -19,7 +19,7 @@ Resources:
         - "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
         - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 
-  # ECS role
+  # ECS role: Allows ECS to create and manage AWS resources on your behalf
   ECSRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -32,34 +32,34 @@ Resources:
               Service:
                 - "ecs.amazonaws.com"
             Action: "sts:AssumeRole"
-#      ManagedPolicyArns:
-#        - "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
-      Policies:
-      - PolicyName: ecs-service
-        PolicyDocument:
-          Statement:
-          - Effect: Allow
-            Action:
-              # Rules which allow ECS to attach network interfaces to instances
-              # on your behalf in order for awsvpc networking mode to work right
-              - 'ec2:AttachNetworkInterface'
-              - 'ec2:CreateNetworkInterface'
-              - 'ec2:CreateNetworkInterfacePermission'
-              - 'ec2:DeleteNetworkInterface'
-              - 'ec2:DeleteNetworkInterfacePermission'
-              - 'ec2:Describe*'
-              - 'ec2:DetachNetworkInterface'
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
+#      Policies:
+#      - PolicyName: ecs-service
+#        PolicyDocument:
+#          Statement:
+#          - Effect: Allow
+#            Action:
+#              # Rules which allow ECS to attach network interfaces to instances
+#              # on your behalf in order for awsvpc networking mode to work right
+#              - 'ec2:AttachNetworkInterface'
+#              - 'ec2:CreateNetworkInterface'
+#              - 'ec2:CreateNetworkInterfacePermission'
+#              - 'ec2:DeleteNetworkInterface'
+#              - 'ec2:DeleteNetworkInterfacePermission'
+#              - 'ec2:Describe*'
+#              - 'ec2:DetachNetworkInterface'
+#
+#              # Rules which allow ECS to update load balancers on your behalf
+#              # with the information sabout how to send traffic to your containers
+#              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+#              - 'elasticloadbalancing:DeregisterTargets'
+#              - 'elasticloadbalancing:Describe*'
+#              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+#              - 'elasticloadbalancing:RegisterTargets'
+#            Resource: '*'    
 
-              # Rules which allow ECS to update load balancers on your behalf
-              # with the information sabout how to send traffic to your containers
-              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
-              - 'elasticloadbalancing:DeregisterTargets'
-              - 'elasticloadbalancing:Describe*'
-              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
-              - 'elasticloadbalancing:RegisterTargets'
-            Resource: '*'    
-
-  # ECS task role
+  # ECS task role: Allows ECS tasks to call AWS services on your behalf
   ECSTaskExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -74,8 +74,18 @@ Resources:
             Action: "sts:AssumeRole"
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      ## Add your own policy for the task to interact with other AWS services:
+#      Policies:
+#        - PolicyName: "S3AccessPolicy"
+#          PolicyDocument:
+#            Version: "2012-10-17"
+#            Statement:
+#              - Effect: "Allow"
+#                Action:
+#                  - "s3:GetObject"
+#                Resource: "arn:aws:s3:::your-bucket-name/*"
 
-  # ECS autoscale role
+  # ECS autoscale role: Allows Auto Scaling to access and update ECS services
   ECSAutoscaleRole:
     Type: "AWS::IAM::Role"
     Properties:
